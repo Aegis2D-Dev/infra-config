@@ -2,6 +2,14 @@
 
 let
   runners = map (i: "cust-aegis2d-01-${toString i}") [ 1 2 3 ];
+
+  # Only Node 24 is packaged (Node 20 is EOL), but the runner still runs hashFiles()
+  # with externals/node20: point that path at Node 24 too.
+  runnerPackage = pkgs.github-runner.overrideAttrs (old: {
+    postInstall = old.postInstall + ''
+      ln -s ${pkgs.nodejs_24} $out/lib/externals/node20
+    '';
+  });
 in
 {
   sops.secrets.github-runner-token = {
@@ -29,12 +37,9 @@ in
     replace = true;
     ephemeral = true;
     extraLabels = [ "nixos" ];
+    package = runnerPackage;
     extraPackages = [ pkgs.docker ];
-    # Only Node 24 is packaged (Node 20 is EOL): use it for hashFiles() and node20 actions too.
-    extraEnvironment = {
-      ACTIONS_RUNNER_FORCED_INTERNAL_NODE_VERSION = "node24";
-      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION = "node24";
-    };
+    extraEnvironment.ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION = "node24";
     serviceOverrides = {
       SupplementaryGroups = [ "docker" ];
       # Container jobs read /proc/1/cgroup and talk to the Docker socket; docker group
