@@ -3,7 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./github-runners.nix
+    ../../modules/github-runners.nix
   ];
 
   boot.loader.grub.enable = true;

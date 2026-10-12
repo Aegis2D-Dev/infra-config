@@ -1,6 +1,7 @@
 keys:
   - &vmbr0 303208D04F9C177379481E2A41DB50B44C725B15
   - &cust-aegis2d-01 age1ycuss35z20dkjjue4arzq69q8eck4w4l4zdnk3upxm6jglndrezsvc90ex
+  - &cust-aegis2d-02 age1sg5kj3qhpwxyx0n0az92r89mvvee70l9hph4u8zsnqvrwn05tc9sx2mpsg
 creation_rules:
   - path_regex: secrets/cust-aegis2d-01\.yaml$
     key_groups:
@@ -8,3 +9,9 @@ creation_rules:
           - *vmbr0
         age:
           - *cust-aegis2d-01
+  - path_regex: secrets/cust-aegis2d-02\.yaml$
+    key_groups:
+      - pgp:
+          - *vmbr0
+        age:
+          - *cust-aegis2d-02

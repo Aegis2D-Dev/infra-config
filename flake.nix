@@ -29,6 +29,7 @@
     {
       nixosConfigurations = {
         cust-aegis2d-01 = mkHost "cust-aegis2d-01";
+        cust-aegis2d-02 = mkHost "cust-aegis2d-02";
       };
     };
 }

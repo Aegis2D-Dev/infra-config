@@ -1,7 +1,9 @@
 { config, lib, pkgs, ... }:
 
 let
-  runners = map (i: "cust-aegis2d-01-${toString i}") [ 1 2 3 ];
+  host = config.networking.hostName;
+  # Three runners per host, named after it: <host>-1, <host>-2, <host>-3.
+  runners = map (i: "${host}-${toString i}") [ 1 2 3 ];
 
   # Only Node 24 is packaged (Node 20 is EOL), but the runner still runs hashFiles()
   # with externals/node20: point that path at Node 24 too.
@@ -13,7 +15,7 @@ let
 in
 {
   sops.secrets.github-runner-token = {
-    sopsFile = ../../secrets/cust-aegis2d-01.yaml;
+    sopsFile = ../secrets + "/${host}.yaml";
     restartUnits = map (name: "github-runner-${name}.service") runners;
   };
 
