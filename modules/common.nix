@@ -21,7 +21,7 @@
     remotes = [{
       name = "origin";
       url = "https://github.com/Aegis2D-Dev/infra-config.git";
-      branches.main.name = "main";
+      branches.main.name = "master";
     }];
   };
 }
