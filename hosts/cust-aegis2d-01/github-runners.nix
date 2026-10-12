@@ -30,6 +30,12 @@ in
     ephemeral = true;
     extraLabels = [ "nixos" ];
     extraPackages = [ pkgs.docker ];
-    serviceOverrides.SupplementaryGroups = [ "docker" ];
+    serviceOverrides = {
+      SupplementaryGroups = [ "docker" ];
+      # Container jobs read /proc/1/cgroup and talk to the Docker socket; docker group
+      # membership is root-equivalent anyway, so these isolations add nothing.
+      ProtectProc = "default";
+      PrivateUsers = false;
+    };
   });
 }
