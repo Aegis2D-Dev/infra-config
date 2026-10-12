@@ -7,14 +7,19 @@
       url = "github:nlewo/comin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, comin, ... }:
+  outputs = { self, nixpkgs, comin, sops-nix, ... }:
     let
       mkHost = hostname: nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           comin.nixosModules.comin
+          sops-nix.nixosModules.sops
           ./modules/common.nix
           ./hosts/${hostname}/configuration.nix
           { networking.hostName = hostname; }

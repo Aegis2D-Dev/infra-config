@@ -16,6 +16,8 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+
   services.comin = {
     enable = true;
     remotes = [{
