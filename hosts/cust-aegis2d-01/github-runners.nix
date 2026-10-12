@@ -30,6 +30,11 @@ in
     ephemeral = true;
     extraLabels = [ "nixos" ];
     extraPackages = [ pkgs.docker ];
+    # Only Node 24 is packaged (Node 20 is EOL): use it for hashFiles() and node20 actions too.
+    extraEnvironment = {
+      ACTIONS_RUNNER_FORCED_INTERNAL_NODE_VERSION = "node24";
+      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION = "node24";
+    };
     serviceOverrides = {
       SupplementaryGroups = [ "docker" ];
       # Container jobs read /proc/1/cgroup and talk to the Docker socket; docker group
