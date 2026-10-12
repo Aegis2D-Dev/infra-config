@@ -9,6 +9,18 @@ in
     restartUnits = map (name: "github-runner-${name}.service") runners;
   };
 
+  # Jobs run in Ubuntu containers (`container:` in the workflows).
+  virtualisation.docker = {
+    enable = true;
+    autoPrune = {
+      enable = true;
+      dates = "weekly";
+    };
+  };
+
+  # Clang 18's ASan crashes with the 32 bits of mmap randomization some kernels use.
+  boot.kernel.sysctl."vm.mmap_rnd_bits" = 28;
+
   services.github-runners = lib.genAttrs runners (name: {
     enable = true;
     inherit name;
@@ -17,6 +29,7 @@ in
     replace = true;
     ephemeral = true;
     extraLabels = [ "nixos" ];
-    extraPackages = with pkgs; [ gcc cmake gnumake ninja pkg-config ];
+    extraPackages = [ pkgs.docker ];
+    serviceOverrides.SupplementaryGroups = [ "docker" ];
   });
 }
