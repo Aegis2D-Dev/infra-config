@@ -30,7 +30,22 @@ in
 
   # CPM sources shared by the container jobs of every runner on this host (mounted at
   # /cpm-cache, CPM locks its downloads); entries unused for 30 days are removed.
-  systemd.tmpfiles.rules = [ "d /var/cache/ci-cpm 0755 root root 30d" ];
+  # Source and build trees kept per runner, repository and job (mounted at /ci-build), so
+  # pull request builds are incremental. Trees unused for 14 days are removed whole: an age
+  # rule would delete single object files out of a tree still in use.
+  systemd.tmpfiles.rules = [
+    "d /var/cache/ci-cpm 0755 root root 30d"
+    "d /var/cache/ci-build 0755 root root -"
+  ];
+  systemd.services.ci-build-prune = {
+    description = "Remove CI build trees unused for 14 days";
+    startAt = "daily";
+    serviceConfig.Type = "oneshot";
+    script = ''
+      ${pkgs.findutils}/bin/find /var/cache/ci-build -mindepth 3 -maxdepth 3 -type d -mtime +14 \
+        -exec ${pkgs.coreutils}/bin/rm -rf {} +
+    '';
+  };
 
   # Clang 18's ASan crashes with the 32 bits of mmap randomization some kernels use.
   boot.kernel.sysctl."vm.mmap_rnd_bits" = 28;
