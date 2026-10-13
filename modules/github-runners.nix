@@ -28,6 +28,10 @@ in
     };
   };
 
+  # CPM sources shared by the container jobs of every runner on this host (mounted at
+  # /cpm-cache, CPM locks its downloads); entries unused for 30 days are removed.
+  systemd.tmpfiles.rules = [ "d /var/cache/ci-cpm 0755 root root 30d" ];
+
   # Clang 18's ASan crashes with the 32 bits of mmap randomization some kernels use.
   boot.kernel.sysctl."vm.mmap_rnd_bits" = 28;
 
