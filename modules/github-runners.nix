@@ -37,14 +37,20 @@ in
     "d /var/cache/ci-cpm 0755 root root 30d"
     "d /var/cache/ci-build 0755 root root -"
   ];
-  systemd.services.ci-build-prune = {
-    description = "Remove CI build trees unused for 14 days";
-    startAt = "daily";
-    serviceConfig.Type = "oneshot";
-    script = ''
-      ${pkgs.findutils}/bin/find /var/cache/ci-build -mindepth 3 -maxdepth 3 -type d -mtime +14 \
-        -exec ${pkgs.coreutils}/bin/rm -rf {} +
-    '';
+
+  # Never give up restarting a runner, however long the network is down.
+  systemd.services = lib.genAttrs (map (name: "github-runner-${name}") runners) (_: {
+    startLimitIntervalSec = 0;
+  }) // {
+    ci-build-prune = {
+      description = "Remove CI build trees unused for 14 days";
+      startAt = "daily";
+      serviceConfig.Type = "oneshot";
+      script = ''
+        ${pkgs.findutils}/bin/find /var/cache/ci-build -mindepth 3 -maxdepth 3 -type d -mtime +14 \
+          -exec ${pkgs.coreutils}/bin/rm -rf {} +
+      '';
+    };
   };
 
   # Clang 18's ASan crashes with the 32 bits of mmap randomization some kernels use.
@@ -67,6 +73,11 @@ in
       # membership is root-equivalent anyway, so these isolations add nothing.
       ProtectProc = "default";
       PrivateUsers = false;
+      # The module only restarts an ephemeral runner after a successful exit: one that fails
+      # to register again (network down) stayed stopped and vanished from GitHub. Retry
+      # every 30 seconds, whatever the exit status.
+      Restart = lib.mkForce "always";
+      RestartSec = "30s";
     };
   });
 }
