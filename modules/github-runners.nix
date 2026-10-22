@@ -12,6 +12,12 @@ let
       ln -s ${pkgs.nodejs_24} $out/lib/externals/node20
     '';
   });
+
+  # Restarts a runner without SSH: bump its number, push, and comin restarts its service
+  # (the unit changes). For a runner gone from GitHub while its service still runs.
+  restarts = {
+    cust-aegis2d-02-2 = 1;
+  };
 in
 {
   sops.secrets.github-runner-token = {
@@ -39,9 +45,10 @@ in
   ];
 
   # Never give up restarting a runner, however long the network is down.
-  systemd.services = lib.genAttrs (map (name: "github-runner-${name}") runners) (_: {
+  systemd.services = lib.listToAttrs (map (name: lib.nameValuePair "github-runner-${name}" {
     startLimitIntervalSec = 0;
-  }) // {
+    restartTriggers = lib.optional (restarts ? ${name}) (toString restarts.${name});
+  }) runners) // {
     ci-build-prune = {
       description = "Remove CI build trees unused for 14 days";
       startAt = "daily";
