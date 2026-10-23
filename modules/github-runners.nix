@@ -82,9 +82,10 @@ in
       PrivateUsers = false;
       # The module only restarts an ephemeral runner after a successful exit: one that fails
       # to register again (network down) stayed stopped and vanished from GitHub. Retry
-      # every 30 seconds, whatever the exit status.
+      # whatever the exit status, after 5 seconds: an ephemeral runner exits after every
+      # job and is missing from GitHub until it registers again.
       Restart = lib.mkForce "always";
-      RestartSec = "30s";
+      RestartSec = "5s";
     };
   });
 }
